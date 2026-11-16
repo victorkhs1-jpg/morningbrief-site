@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>종목 검색</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1b1f24;--muted:#6b7280;--line:#e5e7eb;--up:#16a34a;--down:#dc2626;--accent:#2563eb;--chip:#eef2ff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#181b21;--fg:#e8eaed;--muted:#9aa0a6;--line:#2a2f37;--up:#22c55e;--down:#f87171;--accent:#60a5fa;--chip:#1e2533}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#181b21;--fg:#e8eaed;--muted:#9aa0a6;--line:#2a2f37;--up:#22c55e;--down:#f87171;--accent:#60a5fa;--chip:#1e2533}
+body.tg{--bg:var(--tg-theme-bg-color);--card:var(--tg-theme-secondary-bg-color);--fg:var(--tg-theme-text-color);--muted:var(--tg-theme-hint-color);--accent:var(--tg-theme-button-color)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px}.sub{color:var(--muted);font-size:13px;margin-bottom:10px}
+.search{position:sticky;top:0;background:var(--bg);padding:6px 0 10px;z-index:2}
+input{width:100%;font-size:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);outline:none}
+input:focus{border-color:var(--accent)}
+.tabs{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:var(--card);color:var(--fg);padding:6px 12px;border-radius:999px;font-size:13px;cursor:pointer}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0}
+.row{display:flex;align-items:center;gap:8px}.name{font-weight:600;flex:1;min-width:0;overflow-wrap:anywhere}.tk{color:var(--muted);font-weight:400;font-size:13px}
+.pct{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--muted)}
+.idio{font-size:13px;color:var(--muted);margin-top:2px}.idio b{font-variant-numeric:tabular-nums}
+.reason{margin-top:6px;font-size:14px}.reason a{color:var(--accent);font-size:12px;text-decoration:none}
+.na{color:var(--muted);font-size:13px}
+.x{font-size:13px;color:var(--muted);margin-top:4px}
+.news{margin-top:6px;font-size:13px;line-height:1.45}.news .lb{color:var(--muted);font-size:12px}
+.news a{color:var(--accent);text-decoration:none;display:block;overflow-wrap:anywhere}.news .src{color:var(--muted);font-size:11px}
+.star{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:0 2px;line-height:1}.star.on{color:#f5b301}
+.empty,.more{color:var(--muted);text-align:center;padding:16px 0;font-size:14px}
+.sec{font-weight:700;font-size:15px;margin:16px 0 6px}.notice{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:600;margin-top:8px}
+.ev{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:6px 0;display:flex;gap:10px;align-items:baseline}
+.ev .tm{font-variant-numeric:tabular-nums;font-weight:700;min-width:48px}.ev .tt{flex:1;min-width:0;overflow-wrap:anywhere}
+.ev .meta{display:block;color:var(--muted);font-size:12px;margin-top:2px}.ev .meta a{color:var(--accent);text-decoration:none}
+.chk{margin:4px 0;font-size:14px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:10px}
+.cal .hd{text-align:center;font-size:12px;color:var(--muted);padding:2px 0}.cal .hd.sun{color:var(--down)}.cal .hd.sat{color:var(--accent)}
+.day{background:var(--card);border:1px solid var(--line);border-radius:8px;min-height:62px;padding:3px;cursor:pointer;overflow:hidden}
+.day .dn{font-size:12px;font-weight:700}.day.past{opacity:.55}.day.today{border:2px solid var(--accent)}.day.sel{background:var(--chip)}
+.day.hol .dn{color:var(--down)}
+.chipc{display:block;font-size:10px;line-height:1.25;margin-top:2px;padding:1px 3px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-econ{background:#fdecc8;color:#7a4b00}.k-fed{background:#e3e8ff;color:#2a3a8f}.k-earnings{background:#dff3e4;color:#1d6b35}.k-holiday{background:#fde2e2;color:#9b1c1c}
+.more2{font-size:10px;color:var(--muted)}
+.legend{font-size:11px;color:var(--muted);margin-top:6px}.legend span{margin-right:8px}
+.term{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:6px 0}
+.term b{font-size:15px}.term .tc{font-size:11px;color:var(--muted);margin-left:6px}.term p{margin:4px 0 0;font-size:14px}
+.note{color:var(--muted);font-size:12px;margin-top:16px;line-height:1.6}
+</style></head><body><div class="wrap">
+<h1>🔎 종목 검색 · 📅 일정 · 📖 용어</h1>
+<div class="sub" id="sub">데이터 불러오는 중…</div>
+<div class="search"><input id="q" placeholder="예: 엔비디아, NVDA, 스페이스X" autocomplete="off">
+<div class="tabs"><button class="tab on" data-v="all">전체</button><button class="tab" data-v="fav">⭐ 내 관심종목 <span id="fc"></span></button><button class="tab" data-v="sch">📅 일정</button><button class="tab" data-v="glo">📖 용어</button></div></div>
+<div id="list"></div>
+<div class="note">
+• <b>고유</b> = 시장(S&amp;P500)·업종 ETF 영향을 뺀 기업 자체 등락 추정치 (2요인 모델, 프로그램 계산)<br>
+• <b>설명 3단계</b> (고유 등락 크기 기준): 1%p 미만 = 시장·업종 흐름 문장 · 1~3%p = 흐름 대비 강세·약세 + 관련 뉴스 · 3%p 이상 = 기업 자체 움직임<br>
+• <b>AI 원인 조사</b>: 등락률 ±3% 이상 또는 고유 ±3%p 이상 종목 (출처 확인, 못 찾으면 "뚜렷한 단일 촉매 확인 안 됨")<br>
+• 📊 문장과 숫자는 프로그램이 계산, → 요인은 AI 가 조사하고 프로그램이 검증<br>
+• <b>관련 뉴스</b>는 그 종목에 연결된 해당 거래일 기사로, AI 검증을 거치지 않은 참고 자료예요. 원인으로 확인된 것은 아니에요<br>
+• 검색 대상: S&amp;P500 + 한국인 보유·매수 상위 개별 종목 (ETF 제외)<br>
+• 관심종목은 텔레그램 계정에 저장되어 휴대폰·PC 텔레그램에서 같이 보입니다<br>
+• 정보 제공 목적이며 투자 권유가 아닙니다
+</div></div>
+<script>
+const TG=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData?Telegram.WebApp:null;
+const CS=TG&&TG.CloudStorage&&TG.isVersionAtLeast&&TG.isVersionAtLeast("6.9")?TG.CloudStorage:null;
+if(TG){document.body.classList.add("tg");TG.ready();TG.expand();}
+const TOP_N=30;
+let D=[],fav=[],view="all",S=null;
+const WD="일월화수목금토";
+function dayLabel(ds){if(!ds)return"";const[y,m,d]=ds.split("-").map(Number);const w=new Date(Date.UTC(y,m-1,d)).getUTCDay();return`${WD[w]} ${String(m).padStart(2,"0")}/${String(d).padStart(2,"0")}`;}
+function evHtml(e,withDay){
+ const tm=e.time_kst||"--:--", imp=e.importance==="high"?" ❗":"";
+ const src=e.source_url?`<a href="${esc(e.source_url)}" target="_blank" rel="noopener">${esc(e.source||"출처")}</a>`:esc(e.source||"");
+ const meta=[withDay?dayLabel(e.date_kst):"", e.time_kst?"":"시간 미확인", e.category||"", src].filter(Boolean).join(" · ");
+ return `<div class="ev"><span class="tm">${esc(tm)}</span><span class="tt">🇺🇸 ${esc(e.title||"")}${imp}<span class="meta">${meta}</span></span></div>`;
+}
+try{fav=JSON.parse(localStorage.getItem("mb_fav")||"[]")}catch(e){}
+if(CS)CS.getItem("mb_fav",(err,v)=>{if(!err&&v){try{fav=JSON.parse(v);render()}catch(e){}}});
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cls=p=>Math.abs(p)<0.05?"flat":p>0?"up":"down";
+const sg=(p,u)=>(Math.abs(p)<0.05?"0.0":(p>0?"+":"")+p.toFixed(1))+u;
+const norm=s=>String(s||"").toLowerCase().replace(/\s+/g,"");
+function save(){const v=JSON.stringify(fav);try{localStorage.setItem("mb_fav",v)}catch(e){}if(CS)CS.setItem("mb_fav",v);if(TG&&TG.HapticFeedback)TG.HapticFeedback.selectionChanged();}
+function card(r){
+ const on=fav.includes(r.t);
+ const idio=r.i===null||r.i===undefined?`<div class="idio">고유 등락 계산 안 됨 (이력 부족)</div>`
+  :`<div class="idio">고유 <b class="${cls(r.i)}">${sg(r.i,"%p")}</b> · 업종 기준 ${esc(r.bm)}</div>`;
+ const x=r.x?`<div class="x">📊 ${esc(r.x)}</div>`:"";
+ let rs="";
+ if(r.r)rs=`<div class="reason">→ ${esc(r.r)} ${r.u?`<a href="${esc(r.u)}" target="_blank" rel="noopener">${esc(r.s||"출처")}</a>`:""}</div>`;
+ else if(r.rs==="pending")rs=`<div class="reason na">→ 요인 조사 중이에요 (잠시 후 다시 열어 보세요)</div>`;
+ else if(Math.abs(r.p)>=3||Math.abs(r.i||0)>=3)rs=`<div class="reason na">→ 오늘 요인 조사 대상이 아니에요</div>`;
+ const nw=(r.nw||[]).length?`<div class="news"><span class="lb">관련 뉴스</span>${r.nw.map(n=>`<a href="${esc(n.u)}" target="_blank" rel="noopener">· ${esc(n.h)} <span class="src">${esc([n.d,n.s].filter(Boolean).join(" · "))}</span></a>`).join("")}</div>`:"";
+ const title=r.k?`${esc(r.k)} <span class="tk">${esc(r.t)}</span>`:`${esc(r.n)} <span class="tk">${esc(r.t)}</span>`;
+ return `<div class="card"><div class="row"><button class="star ${on?"on":""}" data-t="${esc(r.t)}" aria-label="관심종목">${on?"★":"☆"}</button>
+ <div class="name">${title}</div><div class="pct ${cls(r.p)}">${sg(r.p,"%")}</div></div>${idio}${x}${rs}${nw}</div>`;
+}
+let SEL=null,G=[];
+const KIND={econ:"📊",fed:"🏛️",earnings:"💼",holiday:"🚫"};
+function shortT(e){if(e.lab)return e.lab;if(e.kind==="earnings")return e.cat||e.title;if(e.kind==="holiday")return "휴장";const c=e.cat||"";return /^[A-Z]/.test(c)?c:(e.title||"").replace(/^\d+월\s*/,"").slice(0,8);}
+function iso(d){return d.toISOString().slice(0,10);}
+function calHtml(C){
+ const[y,m,d]=C.start.split("-").map(Number);const s0=new Date(Date.UTC(y,m-1,d));
+ const by={};(C.events||[]).forEach(e=>{(by[e.date]=by[e.date]||[]).push(e)});
+ let h="";["월","화","수","목","금","토","일"].forEach((w,i)=>h+=`<div class="hd${i===6?" sun":i===5?" sat":""}">${w}</div>`);
+ for(let i=0;i<7*(C.weeks||2);i++){const dt=new Date(s0.getTime()+i*864e5),ds=iso(dt),ev=by[ds]||[];
+  const cls=["day",ds<C.today?"past":"",ds===C.today?"today":"",ds===SEL?"sel":"",ev.some(e=>e.kind==="holiday")?"hol":""].join(" ");
+  const lab=(i===0||dt.getUTCDate()===1)?`${dt.getUTCMonth()+1}/${dt.getUTCDate()}`:dt.getUTCDate();
+  h+=`<div class="${cls}" data-d="${ds}"><div class="dn">${lab}</div>${ev.slice(0,3).map(e=>`<span class="chipc k-${e.kind||"econ"}">${esc(shortT(e))}</span>`).join("")}${ev.length>3?`<span class="more2">+${ev.length-3}</span>`:""}</div>`;}
+ return `<div class="cal">${h}</div><div class="legend"><span>📊 경제지표</span><span>🏛️ 연준</span><span>💼 실적</span><span>🚫 휴장</span></div>`;
+}
+function dayHtml(C,ds){
+ const ev=(C.events||[]).filter(e=>e.date===ds);
+ let h=`<div class="sec">${dayLabel(ds)} 일정 · 한국시간${ds===C.today?" (오늘)":""}</div>`;
+ h+=ev.length?ev.map(e=>{const src=e.url?`<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.src||"출처")}</a>`:esc(e.src||"");
+  const meta=[e.time?"":(e.kind==="holiday"?"":"시간 미확인"),e.note||"",src].filter(Boolean).join(" · ");
+  return `<div class="ev"><span class="tm">${esc(e.time||"--:--")}</span><span class="tt">${KIND[e.kind]||"📊"} ${esc(e.title||"")}${e.imp==="high"?" ❗":""}<span class="meta">${meta}</span></span></div>`;}).join(""):`<div class="empty">확인된 일정이 없어요</div>`;
+ if(ds===C.today&&S&&(S.checklist||[]).length)h+=`<div class="sec">⏰ 오늘 시간표</div>`+S.checklist.map(c=>`<div class="chk">${c.time_kst?`<b>${esc(c.time_kst)}</b> `:"• "}${esc(c.item)}</div>`).join("");
+ return h;
+}
+function schedHtml(){
+ if(!S)return `<div class="empty">일정 정보가 없어요</div>`;
+ let h=S.notice?`<div class="notice">${esc(S.notice)}</div>`:"";
+ const C=S.calendar;
+ if(C){SEL=SEL||C.today;return h+calHtml(C)+dayHtml(C,SEL)+`<div class="note">• 달력은 이번 주 월요일부터 2주 · 시간은 한국시간 · 💼 실적 예정일은 미국 날짜 기준 비공식 정보예요</div>`;}
+ h+=`<div class="sec">📅 오늘 일정 · 한국시간</div>`+((S.today||[]).length?S.today.map(e=>evHtml(e,false)).join(""):`<div class="empty">오늘 24시간 내 확인된 주요 이벤트 없음</div>`);
+ if((S.week||[]).length)h+=`<div class="sec">📆 이번 주 빅 이벤트</div>`+S.week.map(e=>evHtml(e,true)).join("");
+ if((S.checklist||[]).length)h+=`<div class="sec">⏰ 시간표</div>`+S.checklist.map(c=>`<div class="chk">${c.time_kst?`<b>${esc(c.time_kst)}</b> `:"• "}${esc(c.item)}</div>`).join("");
+ return h;
+}
+function gloHtml(){
+ const q=norm($("#q").value);
+ const rows=G.filter(g=>!q||norm(g.t).includes(q)||norm(g.x).includes(q)||(g.k||[]).some(k=>norm(k).includes(q)));
+ if(!rows.length)return `<div class="empty">찾는 용어가 없어요</div>`;
+ let h="",cur="";
+ rows.forEach(g=>{if(!q&&g.c!==cur){cur=g.c;h+=`<div class="sec">${esc(cur)}</div>`;}
+  h+=`<div class="term"><b>${esc(g.t)}</b>${q?`<span class="tc">${esc(g.c)}</span>`:""}<p>${esc(g.x)}</p></div>`;});
+ return h;
+}
+function render(){
+ $("#q").style.display=view==="sch"?"none":"";
+ $("#q").placeholder=view==="glo"?"용어 검색 (예: CPI, 금리, 실적)":"예: 엔비디아, NVDA, 스페이스X";
+ if(view==="sch"){$("#list").innerHTML=schedHtml();return;}
+ if(view==="glo"){$("#list").innerHTML=gloHtml();return;}
+ const q=norm($("#q").value);
+ let rows=D;
+ if(q)rows=D.filter(r=>norm(r.t).includes(q)||norm(r.n).includes(q)||norm(r.k).includes(q))
+          .sort((a,b)=>(norm(b.t)===q)-(norm(a.t)===q));
+ if(view==="fav")rows=rows.filter(r=>fav.includes(r.t));
+ $("#fc").textContent=fav.length?`(${fav.length})`:"";
+ const cut=view==="all"&&!q&&rows.length>TOP_N;
+ const shown=cut?rows.slice(0,TOP_N):rows.slice(0,200);
+ $("#list").innerHTML=shown.length?shown.map(card).join("")+(cut?`<div class="more">오늘 가장 크게 움직인 ${TOP_N}개 · 전체 ${D.length}개는 검색해 보세요</div>`:""):
+  `<div class="empty">${view==="fav"?"☆를 눌러 관심종목을 추가해 보세요":"검색 결과가 없어요 (S&P500·한국인 인기 개별 종목만 있어요)"}</div>`;
+}
+$("#q").addEventListener("input",render);
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+ if((view==="glo")!==(b.dataset.v==="glo"))$("#q").value="";view=b.dataset.v;render()});
+$("#list").addEventListener("click",e=>{const dc=e.target.closest(".day");if(dc){SEL=dc.dataset.d;render();return;}
+ const b=e.target.closest(".star");if(!b)return;const t=b.dataset.t;
+ fav=fav.includes(t)?fav.filter(x=>x!==t):[...fav,t];save();render()});
+{const tq=new URLSearchParams(location.search).get("tab");if(tq==="sch"||tq==="glo"){view=tq;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.v===tq));}}
+fetch("data.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{
+ D=j.items||[];
+ S=j.schedule||null;
+ G=j.glossary||[];
+ const d=String(j.session_date||"");
+ const st=j.research==="running"?" · 요인 조사 진행 중":"";
+ $("#sub").textContent=`미국 ${d.slice(5).replace("-","/")} 장 기준 · ${D.length}개 종목${st} · 이름이나 티커로 검색, ☆로 관심종목 저장`;
+ render();
+}).catch(()=>{$("#sub").textContent="데이터를 불러오지 못했어요. 잠시 후 다시 열어 주세요.";});
+</script></body></html>
