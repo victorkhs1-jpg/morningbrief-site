@@ -1,5 +1,14 @@
 [
  {
+  "date": "2026-11-16",
+  "path": "2026/11/16-weekly.html",
+  "kind": "weekly",
+  "kind_label": "주간 프리뷰",
+  "one_liner": "지난주는 반도체주가 크게 반등했지만 금요일에 다시 밀렸고, 금리 상승이 부담이었습니다. 이번 주는 엔비디아 실적과 연준 의사록, 소매판매가 관전 포인트입니다.",
+  "score": 32,
+  "label": "RISK OFF"
+ },
+ {
   "date": "2026-11-15",
   "path": "2026/11/15-sunday.html",
   "kind": "sunday",
