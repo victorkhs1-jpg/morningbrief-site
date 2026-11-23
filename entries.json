@@ -1,5 +1,14 @@
 [
  {
+  "date": "2026-11-23",
+  "path": "2026/11/23-weekly.html",
+  "kind": "weekly",
+  "kind_label": "주간 프리뷰",
+  "one_liner": "지난주는 인공지능 반도체주가 크게 무너지며 시장 전체가 급락했고 불안 심리가 치솟았습니다. 이번 주는 반등이 이어질지와 수요일 물가 지표가 관전 포인트이고, 목요일은 휴장입니다.",
+  "score": 5,
+  "label": "EXTREME RISK OFF"
+ },
+ {
   "date": "2026-11-22",
   "path": "2026/11/22-sunday.html",
   "kind": "sunday",
